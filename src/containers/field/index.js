@@ -108,7 +108,7 @@ export default class Field extends React.PureComponent {
 		path+=array[0].lat+","+array[0].lng
 		const img_url="https://maps.googleapis.com/maps/api/staticmap?maptype=satellite&center="+center
 			+"&zoom=15&size=150x150&path=color:0xFFFF00FF|weight:3|"+path+
-			"&key=AIzaSyAbBacBJHybSA79AVgd-OHwAa-1kap6fek";
+			"&key=xxx";
 		return img_url
 	}
 	addNewField=()=>{
