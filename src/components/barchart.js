@@ -35,17 +35,6 @@ class Basic extends React.Component {
                 country: "巴西",
                 population: 18203
             },
-            {
-                country: "巴西SA",
-                population: 18203
-            },  {
-                country: "巴西sa",
-                population: 18203
-            }
-            ,  {
-                country: "巴西aa",
-                population: 18203
-            }
         ];
         const ds = new DataSet();
         const dv = ds.createView().source(data);
@@ -56,7 +45,7 @@ class Basic extends React.Component {
         });
         return (
             <div>
-                <Chart height={400} data={dv} forceFit>
+                <Chart height={250} data={dv} forceFit padding={[ 20, 40, 20, 60]}>
                     <Coord transpose />
                     <Axis
                         name="country"

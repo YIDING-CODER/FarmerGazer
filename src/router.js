@@ -11,7 +11,7 @@ export default [{
 	route: '/home',
 	component: Dashboard,
 },{
-	icon: 'barcode',
+	icon: 'border-outer',
 	name: 'Fields',
 	route: '/field',
 	component: Field,
