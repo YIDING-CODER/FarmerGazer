@@ -2,7 +2,7 @@
  * @author Di Wang
  */
 import Field from './containers/field';
-import Extension from './containers/Extension';
+import Extension from './containers/extension';
 import Dashboard from './containers/dashboard';
 
 export default [{

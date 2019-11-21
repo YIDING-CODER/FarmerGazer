@@ -2,27 +2,14 @@ import React from 'react';
 import './dashboard.scss';
 import Basic from '../../components/barchart'
 import { Statistic, Card, Row, Col, Icon } from 'antd';
-import { connect } from "react-redux";
-import { setMenuCollapsed } from "../../redux/setting";
+import PageHeader from "../../components/page-header";
 
-@connect(state => ({ setting: state.setting }), { setMenuCollapsed })
 class Fertilizer extends React.PureComponent {
 
-
 	render() {
-		const { setting } = this.props;
 		return (
-
 			<div className="dashboard">
-
-				<div className="dashboard__title-container">
-					<Icon type={setting.menuCollapsed ? 'menu-unfold' : 'menu-fold'}
-					      className="side-bar__icon"
-					      onClick={() => {
-						      this.props.setMenuCollapsed(!setting.menuCollapsed)
-					      }}/>
-					<h1 className="dashboard__title">Dashboard</h1>
-				</div>
+				<PageHeader>Dashboard</PageHeader>
 				<Row type="flex" justify="space-around">
 					<Col span={5}>
 						<Card>
