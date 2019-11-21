@@ -4,8 +4,8 @@
 
   &__logo {
     height: 34px;
-    background-image: url('./assets/logo/logo.png');
-    background-size: cover;
+    background: url('./assets/logo/logo.png') center center no-repeat;
+    background-size: contain;
     margin: 16px;
   }
 
@@ -28,5 +28,3 @@
     flex: 1;
   }
 }
-
-

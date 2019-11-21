@@ -3,7 +3,6 @@
  */
 import Field from './containers/field';
 import Extension from './containers/Extension';
-import Fertilizer from './containers/fertilizer';
 import Dashboard from './containers/dashboard';
 
 export default [{
@@ -18,7 +17,7 @@ export default [{
 	component: Field,
 }, {
 	icon: 'pie-chart',
-	name: 'Extention',
+	name: 'Extension',
 	route: '/extension',
 	component: Extension,
 }

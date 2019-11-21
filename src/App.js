@@ -19,12 +19,15 @@ class App extends React.PureComponent {
 		return (
 			<div className="app">
 				<div className="app__navigation">
-					<div className="app__logo"/>
+					<div
+						className="app__logo"
+						style={{backgroundImage: `url(${setting.menuCollapsed ? require('./assets/logo/logo_small.png'): require('./assets/logo/logo.png')})`}}
+					/>
 					<Menu
 						style={{ width: setting.menuCollapsed ? 80 : 220 }}
 						className="app__menu"
 						onClick={this._handleClick}
-						defaultSelectedKeys={[this.props.history.location.pathname]}
+						defaultSelectedKeys={[this.props.history.location.pathname === '/' ? '/home' : this.props.history.location.pathname]}
 						mode="inline"
 						inlineCollapsed={setting.menuCollapsed}>
 						{Routers.map(item => (
