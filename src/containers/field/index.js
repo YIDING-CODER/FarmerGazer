@@ -24,7 +24,7 @@ export default class Field extends React.PureComponent {
 		this.state={
 			bgColor:"",
 			active:"",
-			next_id:1,
+			next_id:0,
 			index:1,
 			area:0.2,
 			visible:false,
@@ -96,10 +96,10 @@ export default class Field extends React.PureComponent {
 		return "";
 	};
 	get_image_url=(item)=>{
-		console.log(item)
+
 		const center=item.feature.properties.center.lat+","+item.feature.properties.center.lng
 		const array=item._latlngs[0]
-		console.log(array)
+
 		var path=""
 		array.forEach(function(i, index) {
 			path += i.lat+","+i.lng+"|";
@@ -108,7 +108,7 @@ export default class Field extends React.PureComponent {
 		path+=array[0].lat+","+array[0].lng
 		const img_url="https://maps.googleapis.com/maps/api/staticmap?maptype=satellite&center="+center
 			+"&zoom=15&size=150x150&path=color:0xFFFF00FF|weight:3|"+path+
-			"&key=xxx";
+			"&key=AIzaSyAbBacBJHybSA79AVgd-OHwAa-1kap6fek";
 		return img_url
 	}
 	addNewField=()=>{
@@ -200,7 +200,6 @@ export default class Field extends React.PureComponent {
 
 				var index = array.indexOf(item);
 				if (index !== -1) {
-					// setTimeout(() => {
 						array.splice(index, 1);
 						item.date=moment().format();
 						timeLineArray.unshift(item);
@@ -208,7 +207,6 @@ export default class Field extends React.PureComponent {
 						active.feature.properties.activity_history=timeLineArray
 						self.setState({active});
 						self.forceUpdate();
-					// }, 1000);
 				}
 			},
 			onCancel() {
@@ -230,17 +228,11 @@ export default class Field extends React.PureComponent {
 		this.setState({activeDateButton: event.target})
 
 		self.state.activeNDVIImage.clearLayers();
-		var imageUrl = './fieldimage/'+this.state.activeDateButton.value+'_-20.82560308908457_148.7152719497681.png',
-			imageBounds = [[-20.82560308908457,148.7152719497681],[-20.824439849591265,148.7170743942261],[-20.829213085483662,148.71973514556888]];
+		var imageUrl = './fieldimage/'+event.target.value+'_'+this.state.active._latlngs[0][0].lat+'_'+this.state.active._latlngs[0][0].lng+'.png',
+			imageBounds = this.state.active._latlngs[0];
 
-
-		var last_mouse_x=0;
-		var last_mouse_y=0;
 
 		var L = window.L;
-
-
-
 		var image=L.imageOverlay(imageUrl, imageBounds,{interactive:true});
 
 		var tooltip = L.tooltip({
@@ -249,10 +241,10 @@ export default class Field extends React.PureComponent {
 		});
 		image.addTo(self.state.activeNDVIImage);
 
+
 		this.state.active.off('mousemove');
 		this.state.active.on("mousemove", function (e) {
 			var bounds = image.getBounds();
-			var popup = new L.Popup();
 
 			var x_0=bounds._southWest.lng;
 			var y_0=bounds._northEast.lat;
@@ -283,7 +275,7 @@ export default class Field extends React.PureComponent {
 
 
 		});
-
+		this.forceUpdate();
 		function getPixel(url, x, y) {
 			var img = new Image();
 			img.src = url;
@@ -293,37 +285,13 @@ export default class Field extends React.PureComponent {
 			return context.getImageData(x, y, 1, 1).data;
 		}
 
-		function color_to_index(text){
-			switch(text) {
-				case '66, 33, 0':
-					return {type:'alert',color:"red"};
-				case 'Pests':
-					return {type:'bug',color:"red"};
-				case 'Fertilizers':
-					return {type:'experiment',color:"green"};
-				case 'Weeds':
-					return {type:'warning',color:"orange"};
-				case 'Waterlogging':
-					return {type:'warning',color:"orange"};
-				default:
-					return {type:'pushpin',color:"blue"};
-			}
 
-		}
 
 
 
 
 	}
 	render() {
-
-		var field_data={
-			index:1,
-			area:2,
-			rdvi:0.5,
-			tag: "health",
-		};
-
 		var date_array=fieldData.field_date
 
 		return (
@@ -428,7 +396,7 @@ export default class Field extends React.PureComponent {
 						<div id="mapid" className="field__map"></div>
 					</div>
 					<div className="field__content-panel">
-
+						{/*<a href='#' id='export'>Export Features</a>*/}
 						{this.state.active!=""&&<div className="map-dashboard">
 							<div className="map-dashboard__main">
 								<div className="map-dashboard__section">
@@ -554,6 +522,8 @@ export default class Field extends React.PureComponent {
 	}
 
 	componentDidMount() {
+
+
 		const self = this;
 		var data = require('../../Polygon.json');
 		var L = window.L;
@@ -561,7 +531,6 @@ export default class Field extends React.PureComponent {
 		map.invalidateSize()
 		this.state.map=map;
 
-		// var map = L.map('mapid').setView([51.505, -0.09], 15);
 		L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
 			attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 			maxZoom: 18,
@@ -572,28 +541,70 @@ export default class Field extends React.PureComponent {
 		var featureGroup = L.featureGroup().addTo(map);
 		var ndviGroup=L.featureGroup().addTo(map);
 		this.state.activeNDVIImage =ndviGroup;
+
+		//initialise the data
 		L.geoJSON(data, {
-				style: function(feature) {
-					return { color: "#999", weight: 1};
-				},
-				onEachFeature: function( feature, layer ){
+				onEachFeature: function( newfeature, layer ){
 
-					//click event that triggers the popup and centres it on the polygon
+					const google=window.google
+					// Each time a feaute is created, it's added to the over arching feature group;
+
+
+					var feature = layer.feature = layer.feature || {};
+					feature.type = "Feature";
+					feature.properties = feature.properties || {};
+
+					const area=google.maps.geometry.spherical.computeArea(layer.getLatLngs()[0].map((element)=>{return new google.maps.LatLng(element)}))
+
+					feature.properties["size"] = newfeature.properties.size;
+					feature.properties["id"] = newfeature.properties.id;
+
+					self.state.next_id=self.state.next_id+1;
+					self.setState({next_id:self.state.next_id+1});
+
+					feature.properties["todolist"]=newfeature.properties.todolist;
+					feature.properties["harvest_days"]=newfeature.properties.harvest_days;
+					feature.properties["activity_history"]=newfeature.properties.activity_history;
+
+
+					// // #calculate center point
+					var bounds = layer.getBounds();
+
+					var lat=(bounds._southWest.lat+bounds._northEast.lat)/2;
+					var lng=(bounds._southWest.lng+bounds._northEast.lng)/2;
+					feature.properties["center"] = {lat:lat,lng:lng}
+					function getstyle(size) {
+
+						return { color: "yellow", weight: 3 ,"fillOpacity": .05,"opacity": 1};
+					}
+					layer.setStyle(getstyle(feature.properties["size"]));
+
 					layer.on("click", function (e) {
-						var bounds = layer.getBounds();
-						var popupContent = "<strong>" + feature.properties.size + "</strong><br/>";
-						var popup = new L.Popup();
-
-						self.setState({size:feature.properties.size});
-						layer.bindTooltip("my tooltip text").openTooltip();
+						self.choose_field(layer)
 
 					});
-					// layer.bindPopup( "<strong>" + feature.properties.size + "</strong><br/>")
+					layer.on('mouseover', function () {
+						console.log("enter")
+						layer.setStyle({
+							color: 'white'
+						});
+					});
+					layer.on('mouseout', function () {
+						console.log("out")
+						layer.setStyle({
+							color: 'yellow'
+						});
+					});
+					featureGroup.addLayer(layer);
+
+					var array = [...self.state.fieldList];
+					array.unshift(layer);
+					self.state.fieldList=array
 
 				}
 			}
 
-		).addTo(featureGroup);
+		)
 
 		L.PM.initialize({ optIn: false });
 		map.pm.addControls({
@@ -614,7 +625,7 @@ export default class Field extends React.PureComponent {
 			feature.properties = feature.properties || {};
 
 			const area=google.maps.geometry.spherical.computeArea(layer.getLatLngs()[0].map((element)=>{return new google.maps.LatLng(element)}))
-			console.log("area " +area)
+
 			feature.properties["size"] = (area/10000).toFixed(2);
 			feature.properties["id"] = self.state.next_id
 			self.setState({next_id:self.state.next_id+1})
@@ -666,11 +677,17 @@ export default class Field extends React.PureComponent {
 			var array = [...self.state.fieldList];
 			array.unshift(layer);
 			self.setState({fieldList: array});
-			self.choose_field(layer)
+			// self.choose_field(layer)
 
 
 		});
 
+		// document.getElementById('export').onclick = function(e) {
+		// 	var data = featureGroup.toGeoJSON();
+		// 	var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
+		// 	document.getElementById('export').setAttribute('href', 'data:' + convertedData);
+		// 	document.getElementById('export').setAttribute('download','data.geojson');
+		// }
 
 
 
