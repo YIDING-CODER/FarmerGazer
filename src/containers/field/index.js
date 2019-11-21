@@ -7,12 +7,15 @@ import moment from 'moment'
 import fieldData from '../../assets/data.json';
 import { Progress } from 'antd';
 import harvestPro from '../../data.json';
+import StatCard from '../../components/StatCard';
+
 const { confirm } = Modal;
 const percent = harvestPro;
 const color_array=[[66,33,18],[127,64,32],[183,97,53],[198,51,78],[230,201,87],[253, 254, 3],[230, 236, 6],
 	[208, 223, 0],[185, 207, 2],[162, 192, 0],[138, 175, 0],[114, 160, 0],[91, 142, 3],[69, 129, 0],
 	[45, 112, 0],[37, 96, 45],[21, 84, 45],[21, 68, 45],[213,213,213],[219,170,246]];
 const total_harvest_days=200;
+const market_price=568;
 export default class Field extends React.PureComponent {
 
 
@@ -58,13 +61,16 @@ export default class Field extends React.PureComponent {
 
 		if (this.state.active ==item) {
 			this.setState({
-				active: ""
+				active: "",
+				activeDateButton:""
 			})
+
+			this.state.activeNDVIImage.clearLayers()
 			document.getElementById("mapid").style.minHeight = '100vh';
 			this.state.map.invalidateSize()
 			this.state.map.flyTo(item.feature.properties.center, 16,{
 				animate: true,
-				duration: 1
+				duration: 0.2
 			})
 		}else{
 
@@ -76,7 +82,7 @@ export default class Field extends React.PureComponent {
 				this.state.map.invalidateSize()
 				this.state.map.flyTo(item.feature.properties.center, 16,{
 					animate: true,
-					duration: 1
+					duration: 0.2
 				})
 
 		}
@@ -101,7 +107,7 @@ export default class Field extends React.PureComponent {
 		});
 		path+=array[0].lat+","+array[0].lng
 		const img_url="https://maps.googleapis.com/maps/api/staticmap?maptype=satellite&center="+center
-			+"&zoom=14&size=150x150&path=color:0xFFFF00FF|weight:3|"+path+
+			+"&zoom=15&size=150x150&path=color:0xFFFF00FF|weight:3|"+path+
 			"&key=AIzaSyAbBacBJHybSA79AVgd-OHwAa-1kap6fek";
 		return img_url
 	}
@@ -137,7 +143,7 @@ export default class Field extends React.PureComponent {
 									</div>
 									<div className="field__sidebar-soil-fields-list-pic2">
 										<div >
-											<Progress width={55} type="circle" percent={(total_harvest_days-item.feature.properties.harvest_days)/total_harvest_days*100} size="small" format={harvest_days => <span>{harvest_days}<br/>Days</span>} />
+											<Progress width={55} type="circle" percent={Math.floor((total_harvest_days-item.feature.properties.harvest_days)/total_harvest_days*100)} size="small" format={harvest_days => <span>{harvest_days}<br/>Days</span>} />
 										</div>
 
 									</div>
@@ -327,7 +333,7 @@ export default class Field extends React.PureComponent {
 				<div className="field">
 					<div className="field__map-panel">
 						{/*start*/}
-						<div className="top-toolbar">
+						{this.state.active!=""&&<div className="top-toolbar">
 							<div className="top-toolbar-item __fluid">
 								<div tabIndex="0" className="map-timeline">
 									<div className="map-timeline-header">Vegetation:</div>
@@ -365,9 +371,9 @@ export default class Field extends React.PureComponent {
 									</button>
 								</div>
 							</div>
-						</div>
+						</div>}
 
-						<div className="map-legend">
+						{this.state.active!=""&&<div className="map-legend">
 							<div className="map-legend__item">
 								<div className="map-legend-scale" data-from="Low vegetation" data-to="High">
 									<div className="map-legend-scale__item"
@@ -416,41 +422,19 @@ export default class Field extends React.PureComponent {
 										 style={{backgroundColor: "rgb(109, 170, 246)"}}></div>
 								</div>
 							</div>
-						</div>
+						</div>}
 
 						{/*#end*/}
 						<div id="mapid" className="field__map"></div>
 					</div>
 					<div className="field__content-panel">
 
-
-						{this.state.fieldList.map(
-							(item)=>(
-								<div key={item.id} className="field__sidebar-list-item" style={{ backgroundColor: this.myColor(item) }} onMouseEnter={()=>this.highlight_field(item)} onMouseLeave={()=>this.de_highlight_field(item)} onClick={()=>this.choose_field(item)}>
-									<a href="#" className="field__sidebar-soil-fields-list-item">
-										<div className="field__sidebar-soil-fields-list-pic" style={{backgroundImage: `url(${this.get_image_url(item)})`, Height:48,width:48}}></div>
-										<div className="field__sidebar-soil-fields-list-content">
-											<h2 className="field__sidebar-soil-fields-list-header">{item.feature.properties.id}. Field, {item.feature.properties.size} ha</h2>
-										</div>
-										<div className="field__sidebar-soil-fields-list-pic2">
-											<div >
-												<Progress width={55} type="circle" percent={(total_harvest_days-item.feature.properties.harvest_days)/total_harvest_days*100} size="small" format={harvest_days => <span>{harvest_days}<br/>Days</span>} />
-											</div>
-
-										</div>
-									</a>
-								</div>
-
-							)
-
-						)}
-
 						{this.state.active!=""&&<div className="map-dashboard">
 							<div className="map-dashboard__main">
 								<div className="map-dashboard__section">
 									<PageHeader
 
-										title={"Field #" + field_data.index}
+										title={"Field #" + this.state.active.feature.properties.id}
 										tags={<Tag color="Green">Health</Tag>}
 										// subTitle="This is a subtitle"
 										extra={[
@@ -475,13 +459,12 @@ export default class Field extends React.PureComponent {
 											<Statistic
 												title="Current Market Price"
 												prefix="$"
-												value={568.08 + "/ha"}
+												value={market_price + "/ha"}
 												style={{
 													margin: '0 15px',
 												}}
 											/>
-
-											<Statistic title="Estimated Revenue" prefix="$" value={this.state.active.feature.properties.size*568.08} />
+											<Statistic title="Estimated Revenue" prefix="$" value={Math.floor(this.state.active.feature.properties.size*market_price)} />
 										</Row>
 									</PageHeader>
 								</div>
@@ -552,7 +535,7 @@ export default class Field extends React.PureComponent {
 								<div className="map-dashboard__hr"></div>
 								<div className="map-dashboard__section">
 								<br/>
-
+									<StatCard />
 								</div>
 
 
@@ -636,25 +619,17 @@ export default class Field extends React.PureComponent {
 			feature.properties["id"] = self.state.next_id
 			self.setState({next_id:self.state.next_id+1})
 			feature.properties["todolist"]=[
-				{
-					title: 'Check your vegetation image',
-				}
 			]
-			feature.properties["harvest_days"]=30
+			feature.properties["harvest_days"]=Math.floor(Math.random() * 50+50)
 
 			feature.properties["activity_history"]=[
 				{
-					title:'Create a services site',
-					date:'2015-09-01',
+					title:'Field Created',
+					date:moment().format('YYYY-MM-DD'),
 					topic:'',
 					description:'',
 				},
-				{
-					title:'Technical testing',
-					date:'2015-09-01',
-					topic:'',
-					description:'',
-				}
+
 			]
 
 
@@ -666,15 +641,12 @@ export default class Field extends React.PureComponent {
 			feature.properties["center"] = {lat:lat,lng:lng}
 			function getstyle(size) {
 
-				return { color: "yellow", weight: 3 ,"opacity": 1};
+				return { color: "yellow", weight: 3 ,"fillOpacity": .05,"opacity": 1};
 			}
 			layer.setStyle(getstyle(feature.properties["size"]));
 
 			layer.on("click", function (e) {
-				var bounds = layer.getBounds();
-				var popupContent = "<strong>" + feature.properties.size + "</strong><br/>";
-				var popup = new L.Popup();
-				self.setState({size:feature.properties.size})
+				self.choose_field(layer)
 
 			});
 			layer.on('mouseover', function () {

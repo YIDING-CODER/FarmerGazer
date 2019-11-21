@@ -12,35 +12,25 @@ class Basic extends React.Component {
     render() {
         const data = [
             {
-                country: "中国",
-                population: 131744
+                fieldName: "1. Field",
+                ndviIndex: 0.6
             },
             {
-                country: "印度",
-                population: 104970
+                fieldName: "2. Field",
+                ndviIndex: 0.3
             },
             {
-                country: "美国",
-                population: 29034
+                fieldName: "3. Field",
+                ndviIndex: 0.7
             },
-            {
-                country: "印尼",
-                population: 23489
-            },
-            {
-                country: "巴西",
-                population: 18203
-            },
-            {
-                country: "巴西",
-                population: 18203
-            },
+
+
         ];
         const ds = new DataSet();
         const dv = ds.createView().source(data);
         dv.source(data).transform({
             type: "sort-by",
-            fields: [ 'population' ],
+            fields: [ 'ndviIndex' ],
             order: 'ASC'
         });
         return (
@@ -48,14 +38,14 @@ class Basic extends React.Component {
                 <Chart height={250} data={dv} forceFit padding={[ 20, 40, 20, 60]}>
                     <Coord transpose />
                     <Axis
-                        name="country"
+                        name="fieldName"
                         label={{
                             offset: 12
                         }}
                     />
-                    <Axis name="population" />
+                    <Axis name="ndviIndex" />
                     <Tooltip />
-                    <Geom type="interval" position="country*population" />
+                    <Geom type="interval" position="fieldName*ndviIndex" />
                 </Chart>
             </div>
         );
