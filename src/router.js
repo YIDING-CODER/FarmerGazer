@@ -2,7 +2,7 @@
  * @author Di Wang
  */
 import Field from './containers/field';
-import Note from './containers/note';
+import Extension from './containers/Extension';
 import Fertilizer from './containers/fertilizer';
 import Dashboard from './containers/dashboard';
 
@@ -18,12 +18,14 @@ export default [{
 	component: Field,
 }, {
 	icon: 'pie-chart',
-	name: 'Notes',
-	route: '/note',
-	component: Note,
-}, {
-	icon: 'pie-chart',
-	name: 'Fertilizers',
-	route: '/fertilizer',
-	component: Fertilizer,
-},];
+	name: 'Extention',
+	route: '/extension',
+	component: Extension,
+}
+// , {
+// 	icon: 'pie-chart',
+// 	name: 'Fertilizers',
+// 	route: '/fertilizer',
+// 	component: Fertilizer,
+// },
+];

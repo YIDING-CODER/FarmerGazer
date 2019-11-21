@@ -1,5 +1,5 @@
 import React from 'react';
-import './note.scss';
+import './extension.scss';
 import Layout from "../../components/layout";
 
 export default class Note extends React.PureComponent {
@@ -7,8 +7,8 @@ export default class Note extends React.PureComponent {
 	render() {
 		return (
 			<Layout
-				sideBarTitle="Note">
-				<div className="note">
+				sideBarTitle="Extension">
+				<div className="extension">
 					note
 				</div>
 			</Layout>

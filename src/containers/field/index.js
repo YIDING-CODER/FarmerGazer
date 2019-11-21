@@ -12,15 +12,9 @@ const percent = harvestPro;
 const color_array=[[66,33,18],[127,64,32],[183,97,53],[198,51,78],[230,201,87],[253, 254, 3],[230, 236, 6],
 	[208, 223, 0],[185, 207, 2],[162, 192, 0],[138, 175, 0],[114, 160, 0],[91, 142, 3],[69, 129, 0],
 	[45, 112, 0],[37, 96, 45],[21, 84, 45],[21, 68, 45],[213,213,213],[219,170,246]];
+const total_harvest_days=200;
 export default class Field extends React.PureComponent {
 
-	field_template={
-		id:1,
-		title:"Field",
-		size:0.2,
-		percentage:30,
-		layer:""
-	}
 
 	constructor(props){
 		super(props);
@@ -34,50 +28,6 @@ export default class Field extends React.PureComponent {
 			loading:false,
 			activeDateButton:"",
 			activeNDVIImage:"",
-			toDoList: [
-				{
-					title: 'Ant Design Title 1',
-				},
-				{
-					title: 'Ant Design Title 2',
-				},
-				{
-					title: 'Ant Design Title 2',
-				},
-				{
-					title: 'Ant Design Title 2',
-				},
-				{
-					title: 'Ant Design Title 2',
-				}
-			],
-			timeLine:[
-
-				{
-					title:'Create a services site',
-					date:'2015-09-01',
-					topic:'',
-					description:'',
-				},
-				{
-					title:'Technical testing',
-					date:'2015-09-01',
-					topic:'',
-					description:'',
-				},
-				{
-					title:'Solve initial network problems',
-					date:'2015-09-01',
-					topic:'',
-					description:'',
-				},
-				{
-					title:'Network problems being solved 2015-09-01',
-					date:'2015-09-01',
-					topic:'',
-					description:'',
-				}
-			],
 			fieldList:[
 			],
 			map:""
@@ -97,7 +47,7 @@ export default class Field extends React.PureComponent {
 		setTimeout(() => {
 			this.setState({ loading: false, visible: false });
 		}, 1000);
-		this.state.toDoList.push(item);
+		this.state.active.feature.properties.todolist.push(item);
 	};
 
 	handleCancel = () => {
@@ -112,7 +62,7 @@ export default class Field extends React.PureComponent {
 			})
 			document.getElementById("mapid").style.minHeight = '100vh';
 			this.state.map.invalidateSize()
-			this.state.map.flyTo(item.feature.properties.center, 14,{
+			this.state.map.flyTo(item.feature.properties.center, 16,{
 				animate: true,
 				duration: 1
 			})
@@ -124,10 +74,11 @@ export default class Field extends React.PureComponent {
 				document.getElementById("mapid").style.minHeight = '400px';
 
 				this.state.map.invalidateSize()
-				this.state.map.flyTo(item.feature.properties.center, 15,{
+				this.state.map.flyTo(item.feature.properties.center, 16,{
 					animate: true,
 					duration: 1
 				})
+
 		}
 
 	};
@@ -147,9 +98,6 @@ export default class Field extends React.PureComponent {
 		array.forEach(function(i, index) {
 			path += i.lat+","+i.lng+"|";
 
-			// if (index != (array.length - 1)) {
-			// 	path += '|';
-			// };
 		});
 		path+=array[0].lat+","+array[0].lng
 		const img_url="https://maps.googleapis.com/maps/api/staticmap?maptype=satellite&center="+center
@@ -189,7 +137,7 @@ export default class Field extends React.PureComponent {
 									</div>
 									<div className="field__sidebar-soil-fields-list-pic2">
 										<div >
-											<Progress width={55} type="circle" percent={percent.harvestPro.percentage} size="small" format={percent => <span>{percent}<br/>Days</span>} />
+											<Progress width={55} type="circle" percent={(total_harvest_days-item.feature.properties.harvest_days)/total_harvest_days*100} size="small" format={harvest_days => <span>{harvest_days}<br/>Days</span>} />
 										</div>
 
 									</div>
@@ -239,21 +187,22 @@ export default class Field extends React.PureComponent {
 			title: 'Do you Want to set this item completed?',
 			content: item.title,
 			onOk() {
-				var array = [...self.state.toDoList]; // make a separate copy of the array
-				var timeLineArray=[...self.state.timeLine];
 
-				var index = array.indexOf(item)
+				let active = self.state.active;
+				var array = [...active.feature.properties.todolist]; // make a separate copy of the array
+				var timeLineArray=[...active.feature.properties.activity_history];
+
+				var index = array.indexOf(item);
 				if (index !== -1) {
-					setTimeout(() => {
+					// setTimeout(() => {
 						array.splice(index, 1);
 						item.date=moment().format();
 						timeLineArray.unshift(item);
-						self.setState({toDoList: array});
-						self.setState({timeLine:timeLineArray})
-					}, 1000);
-
-					// console.log(index);
-					// this.setState({toDoList: array});
+						active.feature.properties.todolist=array
+						active.feature.properties.activity_history=timeLineArray
+						self.setState({active});
+						self.forceUpdate();
+					// }, 1000);
 				}
 			},
 			onCancel() {
@@ -473,6 +422,29 @@ export default class Field extends React.PureComponent {
 						<div id="mapid" className="field__map"></div>
 					</div>
 					<div className="field__content-panel">
+
+
+						{this.state.fieldList.map(
+							(item)=>(
+								<div key={item.id} className="field__sidebar-list-item" style={{ backgroundColor: this.myColor(item) }} onMouseEnter={()=>this.highlight_field(item)} onMouseLeave={()=>this.de_highlight_field(item)} onClick={()=>this.choose_field(item)}>
+									<a href="#" className="field__sidebar-soil-fields-list-item">
+										<div className="field__sidebar-soil-fields-list-pic" style={{backgroundImage: `url(${this.get_image_url(item)})`, Height:48,width:48}}></div>
+										<div className="field__sidebar-soil-fields-list-content">
+											<h2 className="field__sidebar-soil-fields-list-header">{item.feature.properties.id}. Field, {item.feature.properties.size} ha</h2>
+										</div>
+										<div className="field__sidebar-soil-fields-list-pic2">
+											<div >
+												<Progress width={55} type="circle" percent={(total_harvest_days-item.feature.properties.harvest_days)/total_harvest_days*100} size="small" format={harvest_days => <span>{harvest_days}<br/>Days</span>} />
+											</div>
+
+										</div>
+									</a>
+								</div>
+
+							)
+
+						)}
+
 						{this.state.active!=""&&<div className="map-dashboard">
 							<div className="map-dashboard__main">
 								<div className="map-dashboard__section">
@@ -482,21 +454,19 @@ export default class Field extends React.PureComponent {
 										tags={<Tag color="Green">Health</Tag>}
 										// subTitle="This is a subtitle"
 										extra={[
-											<Button key="3">Operation</Button>,
-											<Button key="2">Operation</Button>,
 											<Button key="1" type="primary">
-												Primary
+												Edit
 											</Button>,
 										]}
 									>
 										<Row type="flex">
-											<Statistic title="Harvest in" value={percent.harvestPro.percentage + " Days"} style={{
+											<Statistic title="Harvest in" value={this.state.active.feature.properties.harvest_days + " Days"} style={{
 												margin: '0 15px',
 											}}/>
 											<Statistic
 												title="Size"
 												// prefix=""
-												value={0.8 + " ha"}
+												value={this.state.active.feature.properties.size + " ha"}
 												style={{
 													margin: '0 15px',
 												}}
@@ -511,7 +481,7 @@ export default class Field extends React.PureComponent {
 												}}
 											/>
 
-											<Statistic title="Estimated Revenue" prefix="$" value={3345.08} />
+											<Statistic title="Estimated Revenue" prefix="$" value={this.state.active.feature.properties.size*568.08} />
 										</Row>
 									</PageHeader>
 								</div>
@@ -531,7 +501,7 @@ export default class Field extends React.PureComponent {
 									>
 
 											<List
-												dataSource={this.state.toDoList}
+												dataSource={this.state.active.feature.properties.todolist}
 												renderItem={item => (
 													<List.Item actions={[<a key="list-loadmore-edit">edit</a>, <div onClick={()=>this.tickToDoItem(item)}>done</div>]}>
 														<List.Item.Meta
@@ -548,16 +518,11 @@ export default class Field extends React.PureComponent {
 										<Col span={12}>
 											<PageHeader
 												title="Activity History"
-												// tags={<Tag color="Green">Health</Tag>}
-												// subTitle="This is a subtitle"
-												// extra={[
-												// 	<div>Add Notes</div>
-												// ]}
 											>
 											<Timeline style={{
 												margin: '0px 5px',
 											}}>
-												{this.state.timeLine.map(
+												{this.state.active.feature.properties.activity_history.map(
 													(item)=>{
 														return(
 															<Timeline.Item dot={<Icon type={this.getToDoIcon(item.topic).type} style={{ fontSize: '16px'}}  theme="twoTone" twoToneColor={this.getToDoIcon(item.topic).color} />}>
@@ -609,7 +574,7 @@ export default class Field extends React.PureComponent {
 		const self = this;
 		var data = require('../../Polygon.json');
 		var L = window.L;
-		var map = L.map('mapid').setView([-20.841351, 148.725573], 14);
+		var map = L.map('mapid').setView([-20.825, 148.72], 16);
 		map.invalidateSize()
 		this.state.map=map;
 
@@ -665,13 +630,32 @@ export default class Field extends React.PureComponent {
 			feature.type = "Feature";
 			feature.properties = feature.properties || {};
 
-			console.log("ss")
-
 			const area=google.maps.geometry.spherical.computeArea(layer.getLatLngs()[0].map((element)=>{return new google.maps.LatLng(element)}))
 			console.log("area " +area)
 			feature.properties["size"] = (area/10000).toFixed(2);
 			feature.properties["id"] = self.state.next_id
 			self.setState({next_id:self.state.next_id+1})
+			feature.properties["todolist"]=[
+				{
+					title: 'Check your vegetation image',
+				}
+			]
+			feature.properties["harvest_days"]=30
+
+			feature.properties["activity_history"]=[
+				{
+					title:'Create a services site',
+					date:'2015-09-01',
+					topic:'',
+					description:'',
+				},
+				{
+					title:'Technical testing',
+					date:'2015-09-01',
+					topic:'',
+					description:'',
+				}
+			]
 
 
 			// // #calculate center point
